@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  nuxt:
+    build: ./docker/nuxt
+    container_name: batch-nuxt
+    volumes:
+      - ./app:/var/www/app
+    tty: true
+    environment:
+      AUTHOR: ${AUTHOR}
+      PASSWORD: ${PASSWORD}
+    command: /bin/bash
+    # command: sh -c "yarn install && yarn dev"

@@ -1,6 +1,8 @@
+import dotenv from "dotenv";
 import bsky from "@atproto/api";
 import moment from "moment-timezone";
 
+dotenv.config();
 const { BskyAgent } = bsky;
 
 let self = null;
@@ -11,8 +13,8 @@ const today = moment().tz("Asia/Tokyo").startOf("day");
 const login = async function () {
   try {
     const { success, data } = await agent.login({
-      identifier: process.env.SKYHIGH_AUTHOR,
-      password: process.env.SKYHIGH_PASSWORD,
+      identifier: process.env.AUTHOR,
+      password: process.env.PASSWORD,
     });
     self = data;
     return success ? data : null;
@@ -124,7 +126,7 @@ console.log(result);
 
 if (result) {
   try {
-    const users = await getFollowers(process.env.SKYHIGH_AUTHOR);
+    const users = await getFollowers(process.env.AUTHOR);
     const posts = await Promise.all(users.map((user) => getUserPosts(user)));
     const filtering = posts.filter((item) => typeof item.posts === "number");
     const sorted = filtering.sort((a, b) => b.posts - a.posts);

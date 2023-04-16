@@ -7,8 +7,5 @@ services:
     volumes:
       - ./app:/var/www/app
     tty: true
-    environment:
-      SKYHIGH_AUTHOR: ${AUTHOR}
-      SKYHIGH_PASSWORD: ${PASSWORD}
     command: /bin/bash
     # command: sh -c "yarn install && yarn dev"

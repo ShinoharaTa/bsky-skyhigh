@@ -3,7 +3,7 @@ name: Node.js Batch Runner
 on:
   workflow_dispatch:
   schedule:
-    - cron: '45 8 * * *'
+    - cron: '55 23 * * *'
 
 jobs:
   build-and-run:

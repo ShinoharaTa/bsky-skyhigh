@@ -11,8 +11,8 @@ const today = moment().tz("Asia/Tokyo").startOf("day");
 const login = async function () {
   try {
     const { success, data } = await agent.login({
-      identifier: process.env.AUTHOR,
-      password: process.env.PASSWORD,
+      identifier: process.env.SKYHIGH_AUTHOR,
+      password: process.env.SKYHIGH_PASSWORD,
     });
     self = data;
     return success ? data : null;

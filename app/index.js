@@ -120,9 +120,11 @@ const getUserPosts = async function (user) {
 };
 
 const result = await login();
+console.log(result);
+
 if (result) {
   try {
-    const users = await getFollowers(process.env.AUTHOR);
+    const users = await getFollowers(process.env.SKYHIGH_AUTHOR);
     const posts = await Promise.all(users.map((user) => getUserPosts(user)));
     const filtering = posts.filter((item) => typeof item.posts === "number");
     const sorted = filtering.sort((a, b) => b.posts - a.posts);

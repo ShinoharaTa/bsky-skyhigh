@@ -126,8 +126,15 @@ console.log(result);
 
 if (result) {
   try {
+    let time = moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss");
+    post("集計開始：" + time + "");
     const users = await getFollowers(process.env.AUTHOR);
-    const posts = await Promise.all(users.map((user) => getUserPosts(user)));
+    const posts = [];
+
+    for (const user of users) {
+      const userPosts = await getUserPosts(user);
+      posts.push(userPosts);
+    }
     const filtering = posts.filter((item) => typeof item.posts === "number");
     const sorted = filtering.sort((a, b) => b.posts - a.posts);
     let text =
@@ -151,6 +158,9 @@ if (result) {
     text += "4. 一日500投稿以上まで集計\n";
     text += "5. にゃーん\n";
     post(text);
+
+    time = moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss");
+    post("集計終了：" + time + "");
 
     const missing = posts.filter((item) => item.posts === "error");
     console.log(missing);

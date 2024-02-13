@@ -4,14 +4,20 @@
   "description": "Count of user posts Ranking",
   "main": "index.js",
   "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "npm run build && node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "type": "module",
   "author": "T.Shinohara",
   "license": "ISC",
   "dependencies": {
-    "@atproto/api": "^0.2.5",
-    "dotenv": "^16.0.3",
-    "moment-timezone": "^0.5.43"
+    "@atproto/api": "^0.9.6",
+    "@types/node": "^20.11.17",
+    "biome": "^0.3.3",
+    "dotenv": "^16.4.4",
+    "moment-timezone": "^0.5.45",
+    "typescript": "^5.3.3"
   }
 }

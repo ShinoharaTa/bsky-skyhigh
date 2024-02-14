@@ -1,10 +1,13 @@
 import dotenv from "dotenv";
 import { BskyAgent } from "@atproto/api";
+import type { QueryParams } from "@atproto/api/dist/client/types/app/bsky/graph/getFollowers";
+import type { QueryParams as PostQueryParams } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
+import { OutputSchema } from "@atproto/api/dist/client/types/app/bsky/actor/getProfile";
 import moment from "moment-timezone";
 
 dotenv.config();
 
-let self = null;
+let self: OutputSchema;
 const agent = new BskyAgent({ service: "https://bsky.social" });
 const prevDay = moment().tz("Asia/Tokyo").subtract(1, "days").startOf("day");
 const today = moment().tz("Asia/Tokyo").startOf("day");
@@ -12,8 +15,8 @@ const today = moment().tz("Asia/Tokyo").startOf("day");
 const login = async () => {
   try {
     const { success, data } = await agent.login({
-      identifier: process.env.AUTHOR,
-      password: process.env.PASSWORD,
+      identifier: process.env.AUTHOR ?? "",
+      password: process.env.PASSWORD ?? "",
     });
     self = data;
     return success ? data : null;
@@ -22,30 +25,28 @@ const login = async () => {
   }
 };
 
-const post = async (text) => {
+const post = async (text: string) => {
   return agent.api.app.bsky.feed.post.create(
     { repo: self.handle },
     {
-      text: text,
+      text,
       createdAt: new Date().toISOString(),
     }
   );
 };
 
-const getFollowers = async (user_name) => {
+const getFollowers = async (user_name: string) => {
   let cursor = null;
-  let users = [];
+  let users: { handle: string; name: string | undefined }[] = [];
   for (let index = 0; index < 20; index++) {
-    let request = {
+    const request: QueryParams = {
       actor: user_name,
       limit: 100,
     };
     if (cursor) {
       request.cursor = cursor;
     }
-    const { success, data } = await agent.api.app.bsky.graph.getFollowers(
-      request
-    );
+    const { data } = await agent.api.app.bsky.graph.getFollowers(request);
     console.log(data.followers.length);
     const getUsers = data.followers.map((item) => {
       return {
@@ -63,20 +64,18 @@ const getFollowers = async (user_name) => {
   return users;
 };
 
-const getPosts = async (user_name) => {
+const getPosts = async (user_name: string) => {
   let maxCount = 0;
   let cursor = null;
   for (let index = 0; index < 5; index++) {
-    let request = {
+    const request: PostQueryParams = {
       actor: user_name,
       limit: 100,
     };
     if (cursor) {
       request.cursor = cursor;
     }
-    const { success, data } = await agent.api.app.bsky.feed.getAuthorFeed(
-      request
-    );
+    const { data } = await agent.api.app.bsky.feed.getAuthorFeed(request);
     const filterd = data.feed.filter((item) => {
       const itemDate = moment(item.post.indexedAt).tz("Asia/Tokyo");
       return (
@@ -98,26 +97,26 @@ const getPosts = async (user_name) => {
         item.reason?.$type !== "app.bsky.feed.defs#reasonRepost"
       );
     });
-    if (!!end) break;
+    if (end) break;
   }
   return maxCount;
 };
 
-const getUserPosts = async (user) => {
+const getUserPosts = async (user: {
+  handle: string;
+  name: string | undefined;
+}) => {
+  let posts: number;
   try {
-    const posts = await getPosts(user.handle);
-    return {
-      name: user.name,
-      handle: user.handle,
-      posts: posts,
-    };
+    posts = await getPosts(user.handle);
   } catch (ex) {
-    return {
-      name: user.name,
-      handle: user.handle,
-      posts: "error",
-    };
+    posts = 0;
   }
+  return {
+    name: user.name,
+    handle: user.handle ?? "",
+    posts: posts,
+  };
 };
 
 const result = await login();
@@ -127,25 +126,26 @@ if (result) {
   try {
     let time = moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss");
     post(`集計開始：${time}`);
-    const users = await getFollowers(process.env.AUTHOR);
+    const users = await getFollowers(process.env.AUTHOR ?? "");
     const posts = [];
 
     for (const user of users) {
       const userPosts = await getUserPosts(user);
-      posts.push(userPosts);
+      if (userPosts) posts.push(userPosts);
     }
-    const filtering = posts.filter((item) => typeof item.posts === "number");
-    const sorted = filtering.sort((a, b) => b.posts - a.posts);
-    let text =
-      "【すか廃ランキング " + prevDay.format("YYYY/MM/DD") + "】#skyhighrank\n";
+    const sorted = posts
+      .filter((item) => item.posts !== 0)
+      .sort((a, b) => b.posts - a.posts);
+    let text = `【すか廃ランキング ${prevDay.format(
+      "YYYY/MM/DD"
+    )}】#skyhighrank\n`;
     for (let index = 0; index < 10; index++) {
-      let record = index === 0 ? "👑：" : index + 1 + "位：";
-      record += sorted[index].posts + " " + sorted[index].name + "\n";
+      let record = index === 0 ? "👑：" : `${index + 1}位：`;
+      record += `${sorted[index].posts} ${sorted[index].name}\n`;
       if (text.length + record.length > 300) {
         break;
-      } else {
-        text += record;
       }
+      text += record;
     }
     post(text);
 
@@ -161,7 +161,7 @@ if (result) {
     time = moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss");
     post(`集計終了：${time}`);
 
-    const missing = posts.filter((item) => item.posts === "error");
+    const missing = posts.filter((item) => item.posts === 0);
     console.log(missing);
   } catch (ex) {
     let text = "@shino3.net \n";

@@ -1,16 +1,15 @@
 import dotenv from "dotenv";
-import bsky from "@atproto/api";
+import { BskyAgent } from "@atproto/api";
 import moment from "moment-timezone";
 
 dotenv.config();
-const { BskyAgent } = bsky;
 
 let self = null;
 const agent = new BskyAgent({ service: "https://bsky.social" });
 const prevDay = moment().tz("Asia/Tokyo").subtract(1, "days").startOf("day");
 const today = moment().tz("Asia/Tokyo").startOf("day");
 
-const login = async function () {
+const login = async () => {
   try {
     const { success, data } = await agent.login({
       identifier: process.env.AUTHOR,
@@ -23,7 +22,7 @@ const login = async function () {
   }
 };
 
-const post = async function (text) {
+const post = async (text) => {
   return agent.api.app.bsky.feed.post.create(
     { repo: self.handle },
     {
@@ -33,7 +32,7 @@ const post = async function (text) {
   );
 };
 
-const getFollowers = async function (user_name) {
+const getFollowers = async (user_name) => {
   let cursor = null;
   let users = [];
   for (let index = 0; index < 20; index++) {
@@ -64,7 +63,7 @@ const getFollowers = async function (user_name) {
   return users;
 };
 
-const getPosts = async function (user_name) {
+const getPosts = async (user_name) => {
   let maxCount = 0;
   let cursor = null;
   for (let index = 0; index < 5; index++) {
@@ -104,7 +103,7 @@ const getPosts = async function (user_name) {
   return maxCount;
 };
 
-const getUserPosts = async function (user) {
+const getUserPosts = async (user) => {
   try {
     const posts = await getPosts(user.handle);
     return {
@@ -127,7 +126,7 @@ console.log(result);
 if (result) {
   try {
     let time = moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss");
-    post("集計開始：" + time + "");
+    post(`集計開始：${time}`);
     const users = await getFollowers(process.env.AUTHOR);
     const posts = [];
 
@@ -160,12 +159,12 @@ if (result) {
     post(text);
 
     time = moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss");
-    post("集計終了：" + time + "");
+    post(`集計終了：${time}`);
 
     const missing = posts.filter((item) => item.posts === "error");
     console.log(missing);
   } catch (ex) {
-    let text = "@shino3.bsky.social \n";
+    let text = "@shino3.net \n";
     text += "\n";
     text += "エラーが起きて動いてないよっ！！\n";
     text += "助けてーーー（>__<）\n";

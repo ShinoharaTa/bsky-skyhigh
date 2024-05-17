@@ -68,7 +68,7 @@ const getFollowers = async (user_name: string) => {
 const getPosts = async (user_name: string) => {
   let maxCount = 0;
   let cursor = null;
-  for (let index = 0; index < 5; index++) {
+  for (let index = 0; index < 20; index++) {
     const request: PostQueryParams = {
       actor: user_name,
       limit: 100,
@@ -126,8 +126,8 @@ console.log(result);
 if (result) {
   try {
     let time = moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss");
-    post(`集計開始：${time}`);
     const users = await getFollowers(process.env.AUTHOR ?? "");
+    post(`集計開始：${time} users: ${users.length}`);
     const posts = [];
 
     for (const user of users) {
@@ -142,7 +142,7 @@ if (result) {
     )}】#skyhighrank\n`;
     for (let index = 0; index < 10; index++) {
       let record = index === 0 ? "👑：" : `${index + 1}位：`;
-      record += `${sorted[index].posts} ${sorted[index].name}\n`;
+      record += `${sorted[index].posts > 999 ? "999+" : sorted[index].posts} ${sorted[index].name}\n`;
       if (text.length + record.length > 300) {
         break;
       }
@@ -151,12 +151,12 @@ if (result) {
     post(text);
 
     // 投稿後の定型文投稿
-    text = "廃人ランキングは以下の基準で。\n\n";
+    text = "廃人ランキングの集計条件は以下のとおりです。\n\n";
     text += "1. @skyhigh.bsky.social をフォローしている\n";
     text += "2. リポストは含まない\n";
     text += "3. リプはカウント対象内\n";
-    text += "4. 一日500投稿以上まで集計\n";
-    text += "5. にゃーん\n";
+    text += "4. 集計時点から3000投稿まで集計\n";
+    text += "5. しのさんに感謝のコーラを奢ることができる\n";
     post(text);
 
     time = moment().tz("Asia/Tokyo").format("YYYY/MM/DD HH:mm:ss");

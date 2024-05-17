@@ -13,11 +13,11 @@
   "author": "T.Shinohara",
   "license": "ISC",
   "dependencies": {
-    "@atproto/api": "^0.9.6",
-    "@types/node": "^20.11.17",
-    "biome": "^0.3.3",
-    "dotenv": "^16.4.4",
+    "@atproto/api": "^0.12.10",
+    "@types/node": "^20.12.12",
+    "biome": "^0.2.2",
+    "dotenv": "^16.4.5",
     "moment-timezone": "^0.5.45",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.5"
   }
 }

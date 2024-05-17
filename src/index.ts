@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 import { BskyAgent } from "@atproto/api";
 import type { QueryParams } from "@atproto/api/dist/client/types/app/bsky/graph/getFollowers";
 import type { QueryParams as PostQueryParams } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
-import { OutputSchema } from "@atproto/api/dist/client/types/app/bsky/actor/getProfile";
+import type { OutputSchema } from "@atproto/api/dist/client/types/app/bsky/actor/getProfile";
 import moment from "moment-timezone";
 
 dotenv.config();

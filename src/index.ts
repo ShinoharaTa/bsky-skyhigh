@@ -31,6 +31,7 @@ const post = async (text: string) => {
     {
       text,
       createdAt: new Date().toISOString(),
+      langs: ["ja"]
     }
   );
 };

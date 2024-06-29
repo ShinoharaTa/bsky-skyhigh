@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-import { BskyAgent } from "@atproto/api";
+import { BskyAgent, RichText } from "@atproto/api";
 import type { QueryParams } from "@atproto/api/dist/client/types/app/bsky/graph/getFollowers";
 import type { QueryParams as PostQueryParams } from "@atproto/api/dist/client/types/app/bsky/feed/getAuthorFeed";
 import type { OutputSchema } from "@atproto/api/dist/client/types/app/bsky/actor/getProfile";
@@ -26,14 +26,14 @@ const login = async () => {
 };
 
 const post = async (text: string) => {
-  return agent.api.app.bsky.feed.post.create(
-    { repo: self.handle },
-    {
-      text,
-      createdAt: new Date().toISOString(),
-      langs: ["ja"]
-    }
-  );
+  const rt = new RichText({ text });
+  await rt.detectFacets(agent);
+  await agent.post({
+    $type: "app.bsky.feed.post",
+    text: rt.text,
+    facets: rt.facets,
+    langs: ["ja"]
+  });
 };
 
 const getFollowers = async (user_name: string) => {
@@ -111,7 +111,7 @@ const getUserPosts = async (user: {
   try {
     posts = await getPosts(user.handle);
   } catch (ex) {
-    posts = 0;
+    return null
   }
   return {
     name: user.name,
@@ -140,7 +140,8 @@ if (result) {
     let text = `【すか廃ランキング ${prevDay.format(
       "YYYY/MM/DD"
     )}】#skyhighrank\n`;
-    for (let index = 0; index < 10; index++) {
+    for (let index = 0; index < sorted.length; index++) {
+      if(index >= 10) break;
       let record = index === 0 ? "👑：" : `${index + 1}位：`;
       record += `${sorted[index].posts > 999 ? "999+" : sorted[index].posts} ${sorted[index].name}\n`;
       if (text.length + record.length > 300) {
@@ -169,7 +170,6 @@ if (result) {
     text += "\n";
     text += "エラーが起きて動いてないよっ！！\n";
     text += "助けてーーー（>__<）\n";
-    text += "※だれかしのさん宛に引用リポストしてくださいm(_ _)m\n";
     post(text);
     console.log(ex);
   }
